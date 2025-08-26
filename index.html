@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Papağan Sayfası</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(45deg, #87CEEB, #98FB98);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .container {
+            text-align: center;
+            position: relative;
+        }
+
+        .parrot {
+            width: 200px;
+            height: 200px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            user-select: none;
+            animation: float 3s ease-in-out infinite;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+        }
+
+        .parrot:hover {
+            transform: scale(1.1);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .message-box {
+            position: absolute;
+            top: -80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border: 2px solid #333;
+            border-radius: 15px;
+            padding: 15px 20px;
+            min-width: 200px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .message-box.show {
+            opacity: 1;
+            top: -100px;
+        }
+
+        .message-box::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 10px solid white;
+        }
+
+        .message-text {
+            color: #333;
+            font-weight: bold;
+            font-size: 16px;
+            margin: 0;
+        }
+
+        .title {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 28px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .instructions {
+            color: #34495e;
+            margin-top: 30px;
+            font-size: 18px;
+            max-width: 400px;
+        }
+
+        .feeding-panel {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+            min-width: 220px;
+        }
+
+        .feeding-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .feeding-item {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .feeding-button {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 8px;
+        }
+
+        .feeding-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .feeding-button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .water-button {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+        }
+
+        .countdown {
+            font-size: 12px;
+            color: #7f8c8d;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🦜 Konuşan Papağan 🦜</h1>
+        
+        <div style="position: relative;">
+            <div class="message-box" id="messageBox">
+                <p class="message-text" id="messageText"></p>
+            </div>
+            <img class="parrot" id="parrot" src="WhatsApp Görsel 2025-08-25 saat 16.46.31_43dec517.jpg" alt="Papağan" onclick="showRandomMessage()">
+        </div>
+        
+        <p class="instructions">Papağana tıklayın ve ne söyleyeceğini görün!</p>
+    </div>
+
+    <!-- Feeding Panel -->
+    <div class="feeding-panel">
+        <div class="feeding-title">🦜 Papağan Bakımı</div>
+        
+        <div class="feeding-item">
+            <button class="feeding-button" id="foodButton" onclick="feedParrot('food')">
+                🌾 Yem Ver
+            </button>
+            <div class="countdown" id="foodCountdown">Hazır!</div>
+        </div>
+        
+        <div class="feeding-item">
+            <button class="feeding-button water-button" id="waterButton" onclick="feedParrot('water')">
+                💧 Su Ver
+            </button>
+            <div class="countdown" id="waterCountdown">Hazır!</div>
+        </div>
+    </div>
+
+    <script>
+        const messages = [
+            "Param yok",
+            "Para lazım", 
+            "X işine girecem",
+            "Şarjım yok",
+            "Şarjımı unuttum",
+            "Amına kodumun kürtleri yüzünden",
+            "Ömer Akbank Açsana",
+            "Kola alak mı kardeş",
+            "Kolasız yapamıyorum",
+            "Hatay",
+            "Olay sok çıkar boşal değil sadece",
+            "Birgün bizimde tostumuzun içinde sucuk olacak",
+            "Beni bu gruba bi daha almayın",
+            "Senin yarra yamulurum",
+            "Künefe",
+            "Çok lezzetli künefe",
+            "Kardeşim Hatay'da hem deniz hem tarih hem turizm hem gezilecek yer var İstanbul gibi birşey"
+        ];
+
+        const parrotImages = [
+            "WhatsApp Görsel 2025-08-25 saat 16.46.31_43dec517.jpg",
+            "WhatsApp Görsel 2025-08-25 saat 16.48.15_05229c86.jpg",
+            "WhatsApp Görsel 2025-08-25 saat 16.48.15_dbd73e4a.jpg"
+        ];
+
+        let messageTimeout;
+        let foodTimer = null;
+        let waterTimer = null;
+
+        // Load saved feeding times from localStorage
+        function loadFeedingTimes() {
+            const savedFood = localStorage.getItem('lastFoodTime');
+            const savedWater = localStorage.getItem('lastWaterTime');
+            
+            if (savedFood) {
+                const lastFoodTime = parseInt(savedFood);
+                const timeLeft = 24 * 60 * 60 * 1000 - (Date.now() - lastFoodTime);
+                if (timeLeft > 0) {
+                    startCountdown('food', timeLeft);
+                }
+            }
+            
+            if (savedWater) {
+                const lastWaterTime = parseInt(savedWater);
+                const timeLeft = 24 * 60 * 60 * 1000 - (Date.now() - lastWaterTime);
+                if (timeLeft > 0) {
+                    startCountdown('water', timeLeft);
+                }
+            }
+        }
+
+        // Feed the parrot (food or water)
+        function feedParrot(type) {
+            const button = document.getElementById(type + 'Button');
+            const countdown = document.getElementById(type + 'Countdown');
+            
+            // Save current time
+            localStorage.setItem('last' + type.charAt(0).toUpperCase() + type.slice(1) + 'Time', Date.now());
+            
+            // Start 24-hour countdown
+            startCountdown(type, 24 * 60 * 60 * 1000);
+            
+            // Show feeding animation
+            button.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                button.style.transform = '';
+            }, 150);
+            
+            // Show success message
+            showFeedingMessage(type);
+        }
+
+        // Start countdown timer
+        function startCountdown(type, duration) {
+            const button = document.getElementById(type + 'Button');
+            const countdown = document.getElementById(type + 'Countdown');
+            
+            button.disabled = true;
+            
+            const timer = setInterval(() => {
+                duration -= 1000;
+                
+                if (duration <= 0) {
+                    clearInterval(timer);
+                    button.disabled = false;
+                    countdown.textContent = 'Hazır!';
+                    countdown.style.color = '#27ae60';
+                    
+                    // Remove from storage
+                    localStorage.removeItem('last' + type.charAt(0).toUpperCase() + type.slice(1) + 'Time');
+                    
+                    if (type === 'food') foodTimer = null;
+                    else waterTimer = null;
+                } else {
+                    const hours = Math.floor(duration / (1000 * 60 * 60));
+                    const minutes = Math.floor((duration % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((duration % (1000 * 60)) / 1000);
+                    
+                    countdown.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    countdown.style.color = '#e74c3c';
+                }
+            }, 1000);
+            
+            if (type === 'food') foodTimer = timer;
+            else waterTimer = timer;
+        }
+
+        // Show feeding success message
+        function showFeedingMessage(type) {
+            const messageBox = document.getElementById('messageBox');
+            const messageText = document.getElementById('messageText');
+            
+            const feedingMessages = {
+                food: [
+                    "Açtım! Teşekkürler! 🌾",
+                    "Yemm! Çok lezzetli! 😋",
+                    "Doydum, sağol! 😊",
+                    "Bu yemi çok seviyorum! ❤️"
+                ],
+                water: [
+                    "Susuzluğum gitti! 💧",
+                    "Ağımm! Çok susamıştım! 😌",
+                    "Taze su! Mükemmel! 💦",
+                    "Teşekkürler, susuzluğum gitti! 😊"
+                ]
+            };
+            
+            const randomMessage = feedingMessages[type][Math.floor(Math.random() * feedingMessages[type].length)];
+            
+            messageText.textContent = randomMessage;
+            messageBox.classList.add('show');
+            
+            setTimeout(() => {
+                messageBox.classList.remove('show');
+            }, 3000);
+        }
+
+        // Initialize feeding system on page load
+        window.addEventListener('load', loadFeedingTimes);
+
+        function showRandomMessage() {
+            const messageBox = document.getElementById('messageBox');
+            const messageText = document.getElementById('messageText');
+            const parrot = document.getElementById('parrot');
+            
+            // Clear any existing timeout
+            if (messageTimeout) {
+                clearTimeout(messageTimeout);
+            }
+            
+            // Get random message
+            const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+            
+            // Get random parrot image
+            const randomImage = parrotImages[Math.floor(Math.random() * parrotImages.length)];
+            
+            // Set message text
+            messageText.textContent = randomMessage;
+            
+            // Change parrot image with fade effect
+            parrot.style.opacity = '0.5';
+            setTimeout(() => {
+                parrot.src = randomImage;
+                parrot.style.opacity = '1';
+            }, 100);
+            
+            // Show message box
+            messageBox.classList.add('show');
+            
+            // Add click animation to parrot
+            parrot.style.transform = 'scale(0.9)';
+            setTimeout(() => {
+                parrot.style.transform = '';
+            }, 150);
+            
+            // Hide message after 3 seconds
+            messageTimeout = setTimeout(() => {
+                messageBox.classList.remove('show');
+            }, 3000);
+        }
+
+        // Hide message when clicking elsewhere
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.parrot') && !event.target.closest('.message-box')) {
+                document.getElementById('messageBox').classList.remove('show');
+            }
+        });
+    </script>
+</body>
+</html>
